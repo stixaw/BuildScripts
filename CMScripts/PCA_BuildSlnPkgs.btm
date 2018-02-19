@@ -1,0 +1,8 @@
+set BuildDir=%1
+
+set msdev="C:\Program Files\Microsoft Visual Studio 8\Common7\IDE\devenv.exe"
+
+
+%msdev% %BuildDir%\source\pca.sln /CLEAN release
+%msdev% "%BuildDir%\source\pca.sln" /build release /project "%BuildDir%\source\_cdImages\_cdimages.vcproj" /OUT "c:\_cdimages.txt"
+

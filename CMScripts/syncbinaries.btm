@@ -1,0 +1,133 @@
+REM Syncbinaries for 12.5_SP1 and Older
+
+set BranchName=%1
+set TOP=%2
+set LABELNUM=%3	
+set BldScriptDir=%TOP%\CM\BuildScripts
+
+REM p4 login -a < C:\PCA\passworD
+set msdev="C:\Program Files\Microsoft Visual Studio 8\Common7\IDE\devenv.com"
+set path=%path%;%TOP%\CM\BuildScripts\
+
+echo " Updating awver.h and the dat file ...."
+
+cd %TOP%\Source\include
+
+REM p4 edit AWVER.H
+REM fr AWVER.H "#define PCA_BUILD_NUMBER"  "#define PCA_BUILD_NUMBER         %labelnum%"
+REM call renME.bat AWVER.H %TOP%
+
+set ver_str="#define WAW_BUILD_STRING         \"Build %labelnum%\""
+REM fr AWVER.H "#define WAW_BUILD_STRING" %ver_str%
+REM call renME.bat AWVER.H %TOP%
+
+echo Change: new > input.txt
+echo Status: pending >> input.txt
+echo Files: //depot/pcAnywhere/pca32/%BranchName%/source/include/AWVER.H >> input.txt
+echo Description: Updated pcAnywhere Build no %labelnum% in awver.h >> input.txt
+REM p4 submit -i < input.txt
+
+echo " Now Building ........"
+
+REM Clean the Release folder
+%msdev% "%TOP%\source\pca.sln" /Clean release /OUT "%TOP%\cleansolution.txt"
+
+%msdev% "%TOP%\source\pca.sln" /Build release /OUT "%TOP%\buildsolution.txt"
+
+echo %ERRORLEVEL%
+IF  NOT "%ERRORLEVEL%"=="0" (
+   echo " Build has failed due to compilation errors........."
+   exit  -1
+)
+
+REM To Sign
+del /y %TOP%\source\ReleaseUnsigned\*.*
+xcopy /Y /e /k /h /q "%TOP%\source\Release\*.*" "%TOP%\source\ReleaseUnsigned\"
+
+cd %TOP%\CM\BuildScripts
+
+echo _____________code to sign files from list ______________________________
+Set Signer=C:\Tools\CM\Verisign\SignFilesListMsi_setup.bat
+
+
+set OUTPUTDIR=%TOP%\output_win
+mkdir %OUTPUTDIR%\locale
+mkdir %OUTPUTDIR%\locale\1028
+mkdir %OUTPUTDIR%\locale\1031
+mkdir %OUTPUTDIR%\locale\1036
+mkdir %OUTPUTDIR%\locale\1040
+mkdir %OUTPUTDIR%\locale\1041
+mkdir %OUTPUTDIR%\locale\1042
+mkdir %OUTPUTDIR%\locale\3082
+
+
+set SOURCEDIR=%TOP%\Source
+
+copy  %SOURCEDIR%\release\awcfgmgr.dll %OUTPUTDIR%\
+copy  %SOURCEDIR%\release\awhseq.dll  %OUTPUTDIR%\
+copy  %SOURCEDIR%\release\awlog32.dll  %OUTPUTDIR%\
+copy  %SOURCEDIR%\release\awterm32.dll  %OUTPUTDIR%\
+copy  %SOURCEDIR%\release\awxferui.dll  %OUTPUTDIR%\
+copy  %SOURCEDIR%\release\FTStatus.dll  %OUTPUTDIR%\
+copy  %SOURCEDIR%\release\PcaAdminApp.exe  %OUTPUTDIR%\
+copy  %SOURCEDIR%\release\pcACmndg.dll  %OUTPUTDIR%\
+copy  %SOURCEDIR%\release\pcanylog.dll  %OUTPUTDIR%\
+copy  %SOURCEDIR%\release\pcAQuickConnect.exe  %OUTPUTDIR%\
+copy  %SOURCEDIR%\release\PCAQuickconnectDll.dll  %OUTPUTDIR%\
+copy  %SOURCEDIR%\release\SessionManager.dll  %OUTPUTDIR%\
+copy  %SOURCEDIR%\release\WinAw32.exe  %OUTPUTDIR%\
+copy  %SOURCEDIR%\release\AWRem32.exe  %OUTPUTDIR%\
+copy  %SOURCEDIR%\release\awres-all.dll  %OUTPUTDIR%\
+copy  %SOURCEDIR%\release\awres-host.dll  %OUTPUTDIR%\
+copy  %SOURCEDIR%\release\pcalu.exe  %OUTPUTDIR%\
+copy  %SOURCEDIR%\release\awhlogon.dll  %OUTPUTDIR%\
+copy  %SOURCEDIR%\release\UserSessionMgr.exe  %OUTPUTDIR%\
+copy  %SOURCEDIR%\release\adsauth.dll   %OUTPUTDIR%\                                                       
+copy  %SOURCEDIR%\release\PCALocalResLoader.dll  %OUTPUTDIR%\                             
+copy  %SOURCEDIR%\release\winawsvr.exe   %OUTPUTDIR%\                                      
+copy  %SOURCEDIR%\release\awhost32.exe   %OUTPUTDIR%\                                     
+copy  %SOURCEDIR%\release\awhprobe.exe  %OUTPUTDIR%\                                    
+copy  %SOURCEDIR%\release\awofrwrk.dll  %OUTPUTDIR%\                                        
+copy  %SOURCEDIR%\release\aw32tcp.dll  %OUTPUTDIR%\                                          
+copy  %SOURCEDIR%\release\awplay32.dll  %OUTPUTDIR%\
+copy  %SOURCEDIR%\release\awconn32.dll  %OUTPUTDIR%\
+copy  %SOURCEDIR%\release\awdsp32.dll  %OUTPUTDIR%\                                         
+copy  %SOURCEDIR%\release\awhpilot.dll %OUTPUTDIR%\                                          
+copy  %SOURCEDIR%\release\EditFileServer.dll %OUTPUTDIR%\                                      
+copy  %SOURCEDIR%\release\InstalledAppsServer.dll %OUTPUTDIR%\                              
+copy  %SOURCEDIR%\release\ServicesServer.dll  %OUTPUTDIR%\                                    
+copy  %SOURCEDIR%\release\awio.dll  %OUTPUTDIR%\                                              
+copy  %SOURCEDIR%\release\awxfer.dll %OUTPUTDIR%\                                            
+copy  %SOURCEDIR%\release\THost.exe  %OUTPUTDIR%\
+copy  %SOURCEDIR%\release\awses32.dll  %OUTPUTDIR%\
+copy  %SOURCEDIR%\release\awrpilot.dll  %OUTPUTDIR%\
+copy  %SOURCEDIR%\release\awchat.dll  %OUTPUTDIR%\
+copy  %SOURCEDIR%\release\WinNTAuth.dll  %OUTPUTDIR%\
+copy  %SOURCEDIR%\release\ShellClient.dll  %OUTPUTDIR%\
+copy  %SOURCEDIR%\release\SharFileMgr.dll %OUTPUTDIR%\
+copy  %SOURCEDIR%\Nobuilds\Help\pcAnywhere.chm  %OUTPUTDIR%\
+copy  %SOURCEDIR%\Nobuilds\Readme_SP3.txt  %OUTPUTDIR%\
+
+
+copy  "%SOURCEDIR%\LiveUpdate\ini files\PCALU.INI"  %OUTPUTDIR%\
+copy  %SOURCEDIR%\Nobuilds\locale\1028\awres-all.dll  %OUTPUTDIR%\locale\1028
+copy  %SOURCEDIR%\Nobuilds\locale\1028\awres-host.dll %OUTPUTDIR%\locale\1028
+copy  %SOURCEDIR%\Nobuilds\locale\1031\awres-all.dll  %OUTPUTDIR%\locale\1031
+copy  %SOURCEDIR%\Nobuilds\locale\1031\awres-host.dll  %OUTPUTDIR%\locale\1031
+copy  %SOURCEDIR%\Nobuilds\locale\1036\awres-all.dll  %OUTPUTDIR%\locale\1036
+copy  %SOURCEDIR%\Nobuilds\locale\1036\awres-host.dll  %OUTPUTDIR%\locale\1036
+copy  %SOURCEDIR%\Nobuilds\locale\1040\awres-all.dll  %OUTPUTDIR%\locale\1040
+copy  %SOURCEDIR%\Nobuilds\locale\1040\awres-host.dll  %OUTPUTDIR%\locale\1040
+copy  %SOURCEDIR%\Nobuilds\locale\1041\awres-all.dll  %OUTPUTDIR%\locale\1041
+copy  %SOURCEDIR%\Nobuilds\locale\1041\awres-host.dll  %OUTPUTDIR%\locale\1041
+copy  %SOURCEDIR%\Nobuilds\locale\1042\awres-all.dll  %OUTPUTDIR%\locale\1042
+copy  %SOURCEDIR%\Nobuilds\locale\1042\awres-host.dll  %OUTPUTDIR%\locale\1042
+copy  %SOURCEDIR%\Nobuilds\locale\3082\awres-all.dll  %OUTPUTDIR%\locale\3082
+copy  %SOURCEDIR%\Nobuilds\locale\3082\awres-host.dll  %OUTPUTDIR%\locale\3082
+
+
+
+cd %OUTPUTDIR%
+
+dir /s /b * > %TOP%\signlist.txt
+call %Signer% %TOP%\signlist.txt >> %TOP%\BinariesSignStatus.txt
